@@ -11,5 +11,5 @@ class FbCommentsCrawlerItem(scrapy.Item):
     name = scrapy.Field()
     cmt = scrapy.Field()
     time = scrapy.Field()
-    Id = scrapy.Field()
+    # Id = scrapy.Field()
     pass
