@@ -87,12 +87,20 @@ ROBOTSTXT_OBEY = False
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
 
+
+
 # Set settings whose default value is deprecated to a future-proof value
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
+
+#Định dạng utf-8 để hiển thị dấu trong Tiếng Việt
 FEED_EXPORT_ENCODING = "utf-8"
 
+
+
 # Specify the output file format (JSON, CSV, XML, etc.)
+
+#Định dạng đầu ra của Output
 FEED_FORMAT = 'json'
 
 # Specify the output file name
