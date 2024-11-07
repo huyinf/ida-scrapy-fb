@@ -22,7 +22,7 @@ Tutorial and How to craw comments from Facebook with Scrapy
     - thiết kế lại spider để lấy link các bài viết của fan page, gợi ý dùng mục **timeline**. Tui đã thử và bài viết chúaw video không thể xử lý do khi truy cập thì không hiện mục bình luận, nên tui đề xuất tạm bỏ qua video.
 
 ---
-- 23h - 90/4
+- 23h - 09/4
   - thiết kế chương trình:
     - input: url fanpage
     - duyệt timeline (chứa các bài post) lấy ra danh sách các bài post
