@@ -1,30 +1,88 @@
-# ida-scrapy-fb
-Tutorial and How to craw comments from Facebook with Scrapy
+# Facebook Comments Crawler
+
+A web scraping project using Scrapy framework to extract comments from Facebook fan pages. This tool crawls Facebook timeline posts and extracts structured comment data including author names, content, and timestamps.
+
+## Features
+
+- Facebook authentication via mbasic interface
+- Timeline crawling to collect post links
+- Comment extraction with pagination support
+- Structured JSON data export
+- Configurable rate limiting
+
+## Installation
+
+```bash
+pip install scrapy lxml parsel w3lib twisted cryptography pyOpenSSL numpy
+```
+
+## Quick Start
+
+### Crawl Comments from a Single Post
+
+```bash
+cd fb_comments_crawler
+scrapy crawl comments
+```
+
+### Crawl Timeline and Multiple Posts
+
+```bash
+cd fb_comments_crawler
+scrapy crawl timeline
+```
+
+## Configuration
+
+Before running, update credentials and URLs in the spider files:
+- `email` and `password` in spider classes
+- `target_url` or `post_urls` for target pages
+- `max_comment` and `DOWNLOAD_DELAY` for rate limiting
+
+## Output
+
+Data is exported to `output.json` with structure:
+```json
+{
+  "name": "User Name",
+  "cmt": "Comment content",
+  "time": "Timestamp"
+}
+```
+
+## Project Structure
+
+```
+fb_comments_crawler/
+├── fb_comments_crawler/
+│   ├── spiders/
+│   │   ├── comments.py      # Single post comment extraction
+│   │   └── timeline.py      # Timeline crawling and multi-post extraction
+│   ├── items.py             # Data structure definitions
+│   ├── pipelines.py         # Data processing pipeline
+│   ├── middlewares.py       # Request/response middleware
+│   └── settings.py          # Scrapy configuration
+├── output.json              # Scraped data output
+└── scrapy.cfg               # Project configuration
+```
+
+## Limitations
+
+- Requires valid Facebook credentials
+- Subject to Facebook's rate limiting and anti-scraping measures
+- May need adjustments if Facebook changes their HTML structure
+- Video posts are excluded (mbasic view doesn't display comments)
+
+For detailed technical documentation, see [fb_comments_crawler/README.md](fb_comments_crawler/README.md).
 
 ---
-## Timeline
-- 9h sáng 28/04
-  - Demo những gì đã làm được.
-  - **Code cá nhân cho vào thư mục tên của mình và đẩy lên git.**
-  - Làm theo người code tốt nhất
-- (Update sau)
-- 21h ngày 02/05
-  - Soạn slide và hoàn thành project
-- 12/05 nộp project trên moodle.
 
----
-- 9h sáng 29/04
-  - bot đã cào được toàn bộ bình luận của 1 bài viết nhưng do vi phạm tiêu chuẩn cộng đồng (server ko tiếp nhận kịp, giới hạn tốc độ tải) nên chỉ dùng lần đầu và bị chặn cho các lần sau.
-  - **đề xuất giải pháp**
-    - vẫn cố gắng cào hết, kèm theo cài đặt cho phù hợp tiêu chuẩn cộng đồng.
-    - giới hạn số lần muốn cào cho 1 bài viết (ví dụ: bài viết có 500 bình luận, chia thành 50 trang, ta có thể giới hạn cào dưới 10 trang).
-  - **cào nhiều bài viết**
-    - thiết kế lại spider để lấy link các bài viết của fan page, gợi ý dùng mục **timeline**. Tui đã thử và bài viết chúaw video không thể xử lý do khi truy cập thì không hiện mục bình luận, nên tui đề xuất tạm bỏ qua video.
+## Collaboration Credits
 
----
-- 23h - 09/4
-  - thiết kế chương trình:
-    - input: url fanpage
-    - duyệt timeline (chứa các bài post) lấy ra danh sách các bài post
-    - Với từng bài post:
-      - duyệt phần comments và xuất ra file (chứa danh sách [name,id,time,content])
+This project was originally developed as a group project for CSC17001 - Intelligent Data Analysis course. The following contributors participated during the collaboration period (April-May 2024):
+
+- **huyinf**: Initial project setup, core comments.py spider implementation, initial timeline.py spider, project documentation
+- **Nguyễn Chí Cường**: Comments.py refactoring and optimization, timeline.py major updates and enhancements, items.py improvements
+- **VongoctriZ** (project maintainer): fb_page.py spider implementation, final code integration, project finalization
+
+The project reached its final collaborative state on May 12, 2024. Subsequent improvements and maintenance have been done independently by VongoctriZ.

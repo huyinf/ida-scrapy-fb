@@ -1,89 +1,142 @@
-# Web Crawler - Scrapy: Tutorials and How to use Scrapy to crawl comments from Facebook fanpage
+# Facebook Comments Crawler - Technical Documentation
 
+## Overview
 
-## 1. Introduction and Basic Concepts
+This project implements two spiders for Facebook data extraction:
+- **comments.py**: Extracts comments from a single Facebook post
+- **timeline.py**: Crawls fan page timeline and extracts comments from multiple posts
 
-- **Scrapy** - a fast high-level web crawling and web scraping framework, used to crawl websites and extract structured data from their pages.
+## Spiders
 
-- **Installation**
-    > pip install Scrapy
-  
-- **Things that are good to know**
-  - [lxml]()
-  - [parsel]()
-  - [w3lib]()
-  - [twisted]()
-  - [crytography]()
-  - [pyOpenSSL]()
+### comments.py
 
-- **Basic Concepts**
-  - **Spider** - user-defined classes and uses to scrape information from a website (or a group of websites) - **custom behaviour**.
-  - Items
-  - Pipeline
-  - Middleware
-  - Settings
+**Purpose**: Extract comments from a single Facebook post
 
-- **The scraping cycle**
-  1. Generate the initial Requests to crawl the first URLs, and specify a callback function.
-  2. In the callback function, you parse the response (web page) and return item objects.
-  3. In callback functions, you parse the page contents and generate items with the parsed data.
-  4. The items returned from the spider will be persisted to a **database** (in some **Item Pipeline**) or written to a **file** using **Feed exports**.
+**Key Features**:
+- Facebook authentication via mbasic interface
+- CSRF token extraction and handling
+- XPath-based comment extraction
+- Pagination support through "see_next" links
+- Configurable download delays
 
-## 2. Simple Example
+**Usage**:
+```bash
+cd fb_comments_crawler
+scrapy crawl comments
+```
 
-1. Creating a new Scrapy project
+**Configuration**:
+- Update `login_url`, `email`, `password` in spider class
+- Set `post_urls` list with target post URLs
+- Adjust `DOWNLOAD_DELAY` in custom_settings
 
-    > scrapy startproject tutorial
-   
-    - directory:
-   
-    >
-        tutorial/
-         
-            scrapy.cfg            # deploy configuration file
-        
-            tutorial/             # project's Python module, you'll import your code from here
-         
-                __init__.py
-        
-                items.py          # project items definition file
-        
-                middlewares.py    # project middlewares file
-        
-                pipelines.py      # project pipelines file
-        
-                settings.py       # project settings file
-        
-                spiders/          # a directory where you'll later put your spiders
-                    __init__.py
+### timeline.py
 
-2. Writing a Spider to crawl a site and extract data
-   
-   - Must subclass Spider and define the initial requests to make.
-   - Attributes and Methods
-     - **name** - identifies the Spider, must be unique.
-     - **start_requests()** - return an iterable of Requests which the Spider will begin to crawl from.
-     - **start_urls** - list of URLs will be used by the **start_requests()** method. (shortcut)
-     - **parse()** - be called to handle the response downloaded for each of the requests made.
-       - parses the response
-       - extract the scraped data as dicts
-       - findi new URLs to follow 
-       - create new requests (Request).
-   - How to run spider
-     > scrapy crawl quotes
+**Purpose**: Crawl fan page timeline and extract comments from multiple posts
 
-3. Exporting the scraped data (using the command line)
+**Key Features**:
+- Timeline navigation and post link extraction
+- Iterates through multiple posts
+- Comment extraction with per-post limits
+- Random delays between requests (2-10 seconds)
+- Configurable maximum comments per post and pages to crawl
 
-   - Use dev tool of browser and Scrapy selectors ([CSS](),[XPath](),...) to manipulate **response object**.
-   - Store the scraped data is by using [Feed exports](https://docs.scrapy.org/en/latest/topics/feed-exports.html#topics-feed-exports)
-     > scrapy crawl quotes -O quotes.json
-4. Changing spider to recursively follow links
-    - Example
-   >
-        next_page = response.css("li.next a::attr(href)").get()
-        if next_page is not None:
-            yield response.follow(next_page, callback=self.parse)
+**Usage**:
+```bash
+cd fb_comments_crawler
+scrapy crawl timeline
+```
 
-## 3. Facebook Crawler
+**Configuration**:
+- Update `target_url` with fan page URL
+- Set `max_comment` for comments per post limit
+- Adjust `visit_count` limit for timeline pages
 
-## 4. Insights
+## Data Structure
+
+### FbCommentsCrawlerItem
+
+```python
+{
+    'name': str,    # Comment author name
+    'cmt': str,     # Comment content
+    'time': str     # Comment timestamp
+}
+```
+
+## Implementation Details
+
+### Authentication
+
+The spiders use Facebook's mbasic interface for easier HTML parsing:
+- Extract CSRF token (`fb_dtsg`) from login form
+- Submit credentials via FormRequest
+- Verify login success before proceeding
+
+### HTML Parsing
+
+**Comment Extraction Strategy**:
+1. Locate comment container using ID pattern: `//*[@id[starts-with(., "ufi")]]`
+2. Identify comment section by finding div without ID attribute
+3. Extract individual comments using XPath selectors
+4. Handle pagination through "see_prev" and "see_next" elements
+
+**XPath Selectors Used**:
+- Comment author: `div/h3/a/text()`
+- Comment content: `div/div/text()`
+- Comment timestamp: `div/div[@class="_52jc _52j9 _52jg"]/abbr/text()`
+
+### Rate Limiting
+
+To respect Facebook's community standards:
+- Fixed delays: `DOWNLOAD_DELAY = 2` seconds
+- Random delays: `np.random.randint(2, 10)` seconds
+- Comment limits per post to avoid excessive requests
+
+## Configuration
+
+### settings.py
+
+Key settings:
+- `ROBOTSTXT_OBEY = False`: Disable robots.txt compliance (required for Facebook)
+- `FEED_FORMAT = 'json'`: Output format
+- `FEED_URI = 'output.json'`: Output file path
+- `DOWNLOAD_DELAY`: Delay between requests (set in spider custom_settings)
+
+### Spider Custom Settings
+
+Each spider can override global settings:
+```python
+custom_settings = {
+    'DOWNLOAD_DELAY': 2  # 2 second delay between requests
+}
+```
+
+## Troubleshooting
+
+**Login Fails**:
+- Verify credentials are correct
+- Check if Facebook requires 2FA or additional verification
+- Ensure CSRF token extraction is working
+
+**No Comments Extracted**:
+- Verify XPath selectors match current Facebook HTML structure
+- Check if post actually has comments
+- Inspect page source to verify element structure
+
+**Rate Limiting**:
+- Increase `DOWNLOAD_DELAY`
+- Reduce number of posts/comments to crawl
+- Add longer random delays
+
+---
+
+## Collaboration Credits
+
+This project was originally developed as a group project for CSC17001 - Intelligent Data Analysis course (April-May 2024). Contributors during the collaboration period:
+
+- **huyinf**: Initial project setup, core comments.py spider implementation, initial timeline.py spider, project documentation
+- **Nguyễn Chí Cường**: Comments.py refactoring and optimization, timeline.py major updates and enhancements, items.py improvements  
+- **VongoctriZ** (project maintainer): fb_page.py spider implementation, final code integration, project finalization
+
+The project reached its final collaborative state on May 12, 2024. Subsequent improvements and maintenance have been done independently by VongoctriZ.
